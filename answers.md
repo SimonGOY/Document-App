@@ -34,3 +34,22 @@
 ### Exercice 1 :
 
 Une propriété statique en programmation est une propriété attachée à une classe plutôt qu'à une instance de cette classe. Cela signifie qu'elle est partagée par toutes les instances de la classe et qu'elle peut être utilisée sans créer d'objet à partir de cette classe.
+
+### Exercice 2 :
+
+La méthode dequeueReusableCell est essentielle pour optimiser les performances des tables dans les applications iOS. Elle permet de réutiliser les cellules déjà affichées à l'écran, plutôt que de créer de nouvelles instances à chaque fois qu'une cellule doit être affichée. Cela réduit la consommation de mémoire, améliore la fluidité du défilement et évite des recalculs inutiles, car les cellules réutilisées conservent leur état. En réutilisant les cellules plutôt qu'en les recréant, l'application devient plus rapide, plus réactive et plus économe en ressources, ce qui est crucial pour les listes longues et les appareils mobiles à ressources limitées.
+
+## 4 - Navigation :
+
+### Exercice 1 : 
+
+En ajoutant un NavigationController via le menu Embed In > Navigation Controller, nous avons encapsulé notre TableViewController dans une hiérarchie de navigation. Cela signifie que notre TableViewController devient la racine d'une pile de vues gérée par le NavigationController. Cela permet d'ajouter facilement la navigation entre plusieurs pages de l'application, comme passer d'une liste à un détail, tout en bénéficiant d'une NavigationBar intégrée.
+- Le NavigationController sert à : 
+    - Gérer une pile de contrôleurs de vue
+    - Faciliter la navigation
+    - Afficher une NavigationBar
+
+
+- NavigationBar : Élément visuel affiché en haut de l'écran, contenant le titre et des boutons.
+- NavigationController : Contrôleur logique qui gère la pile de vues et permet la navigation entre les écrans.
+- La NavigationBar est une partie visible, tandis que le NavigationController gère la logique de navigation.
