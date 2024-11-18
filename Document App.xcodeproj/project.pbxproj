@@ -13,6 +13,7 @@
 		2E9E26C62CEB291C00FEF37C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2E9E26C42CEB291C00FEF37C /* Main.storyboard */; };
 		2E9E26C82CEB291E00FEF37C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E9E26C72CEB291E00FEF37C /* Assets.xcassets */; };
 		2E9E26CB2CEB291E00FEF37C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2E9E26C92CEB291E00FEF37C /* LaunchScreen.storyboard */; };
+		2E9E26D32CEB46C600FEF37C /* DocumentTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E9E26D22CEB46C600FEF37C /* DocumentTableViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		2E9E26C72CEB291E00FEF37C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2E9E26CA2CEB291E00FEF37C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2E9E26CC2CEB291E00FEF37C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2E9E26D22CEB46C600FEF37C /* DocumentTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentTableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 		2E9E26BD2CEB291C00FEF37C /* Document App */ = {
 			isa = PBXGroup;
 			children = (
+				2E9E26D22CEB46C600FEF37C /* DocumentTableViewController.swift */,
 				2E9E26BE2CEB291C00FEF37C /* AppDelegate.swift */,
 				2E9E26C02CEB291C00FEF37C /* SceneDelegate.swift */,
 				2E9E26C22CEB291C00FEF37C /* ViewController.swift */,
@@ -140,6 +143,7 @@
 			files = (
 				2E9E26C32CEB291C00FEF37C /* ViewController.swift in Sources */,
 				2E9E26BF2CEB291C00FEF37C /* AppDelegate.swift in Sources */,
+				2E9E26D32CEB46C600FEF37C /* DocumentTableViewController.swift in Sources */,
 				2E9E26C12CEB291C00FEF37C /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
