@@ -9,61 +9,84 @@ import UIKit
 
 class DocumentTableViewController: UITableViewController {
     
+    // Structure pour représenter un fichier de document
     struct DocumentFile {
-        var title: String
-        var size: Int
-        var imageName: String? = nil
-        var url: URL
-        var type: String
+        var title: String         // Titre du fichier
+        var size: Int             // Taille en octets
+        var imageName: String?    // Nom de l'image associée (facultatif)
+        var url: URL              // URL du fichier
+        var type: String          // Type MIME du fichier
     }
     
-    static var documentsFile = [
-        DocumentFile(title: "Document 1", size: 100, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 2", size: 200, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 3", size: 300, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 4", size: 400, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 5", size: 500, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 6", size: 600, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 7", size: 700, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 8", size: 800, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 9", size: 900, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain"),
-        DocumentFile(title: "Document 10", size: 1000, imageName: nil, url: URL(string: "https://www.apple.com")!, type: "text/plain")
-    ]
+    // Liste des fichiers à afficher dans le TableView
+    var documentsFile = [DocumentFile]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Documents"
+        
+        // Charger les fichiers du bundle et les assigner au tableau
+        documentsFile = listFileInBundle()
+        
+        // Recharger le TableView avec les nouvelles données
+        tableView.reloadData()
     }
 
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 1 // Une seule section
     }
         
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return DocumentTableViewController.documentsFile.count
+        return documentsFile.count // Nombre de fichiers dans la liste
     }
         
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        // Réutiliser ou créer une cellule
         let cell = tableView.dequeueReusableCell(withIdentifier: "DocumentCell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "DocumentCell")
-        let document = DocumentTableViewController.documentsFile[indexPath.row]
         
+        // Récupérer le document correspondant à la ligne
+        let document = documentsFile[indexPath.row]
+        
+        // Configurer le texte principal et les détails de la cellule
         cell.textLabel?.text = document.title
         cell.detailTextLabel?.text = "Size: \(document.size.formattedSize())"
         
-        if let imageName = document.imageName, let image = UIImage(named: imageName) {
-            cell.imageView?.image = image
-        } else {
-            cell.imageView?.image = UIImage(systemName: "doc.text")
-        }
-        
         return cell
+    }
+    
+    // Fonction pour lister les fichiers dans le bundle principal
+    func listFileInBundle() -> [DocumentFile] {
+        
+        let fm = FileManager.default // Gestionnaire de fichiers
+        guard let path = Bundle.main.resourcePath else { return [] } // Chemin des ressources du bundle
+        let items = try! fm.contentsOfDirectory(atPath: path) // Liste des fichiers dans le bundle
+        
+        var documentListBundle = [DocumentFile]() // Liste des fichiers validés
+        
+        for item in items {
+            // Filtrer les fichiers pour exclure les fichiers système et inclure uniquement les ".jpg"
+            if !item.hasSuffix("DS_Store") && item.hasSuffix(".jpg") {
+                let currentUrl = URL(fileURLWithPath: path + "/" + item) // URL complète du fichier
+                
+                // Récupération des métadonnées (nom, type, taille)
+                if let resourcesValues = try? currentUrl.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey]) {
+                    documentListBundle.append(DocumentFile(
+                        title: resourcesValues.name ?? "Unknown",      // Nom du fichier
+                        size: resourcesValues.fileSize ?? 0,          // Taille du fichier
+                        imageName: item,                              // Nom de l'image
+                        url: currentUrl,                              // URL complète
+                        type: resourcesValues.contentType?.description ?? "Unknown" // Type MIME
+                    ))
+                }
+            }
+        }
+        return documentListBundle // Retourner la liste des fichiers trouvés
     }
 }
 
+// Extension pour formater les tailles de fichiers
 extension Int {
-    // Extension de Int pour formater la taille en Bytes, KB, MB, GB
     func formattedSize() -> String {
         let byteCountFormatter = ByteCountFormatter()
         byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB] // Limiter aux unités pertinentes
