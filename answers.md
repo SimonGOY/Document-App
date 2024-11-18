@@ -34,3 +34,7 @@
 ### Exercice 1 :
 
 Une propriété statique en programmation est une propriété attachée à une classe plutôt qu'à une instance de cette classe. Cela signifie qu'elle est partagée par toutes les instances de la classe et qu'elle peut être utilisée sans créer d'objet à partir de cette classe.
+
+### Exercice 2 :
+
+La méthode dequeueReusableCell est essentielle pour optimiser les performances des tables dans les applications iOS. Elle permet de réutiliser les cellules déjà affichées à l'écran, plutôt que de créer de nouvelles instances à chaque fois qu'une cellule doit être affichée. Cela réduit la consommation de mémoire, améliore la fluidité du défilement et évite des recalculs inutiles, car les cellules réutilisées conservent leur état. En réutilisant les cellules plutôt qu'en les recréant, l'application devient plus rapide, plus réactive et plus économe en ressources, ce qui est crucial pour les listes longues et les appareils mobiles à ressources limitées.
