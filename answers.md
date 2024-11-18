@@ -44,7 +44,7 @@ La méthode dequeueReusableCell est essentielle pour optimiser les performances 
 ### Exercice 1 : 
 
 En ajoutant un NavigationController via le menu Embed In > Navigation Controller, nous avons encapsulé notre TableViewController dans une hiérarchie de navigation. Cela signifie que notre TableViewController devient la racine d'une pile de vues gérée par le NavigationController. Cela permet d'ajouter facilement la navigation entre plusieurs pages de l'application, comme passer d'une liste à un détail, tout en bénéficiant d'une NavigationBar intégrée.
-Le NavigationController sert à : 
+- Le NavigationController sert à : 
     - Gérer une pile de contrôleurs de vue
     - Faciliter la navigation
     - Afficher une NavigationBar
