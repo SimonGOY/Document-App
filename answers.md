@@ -53,3 +53,15 @@ En ajoutant un NavigationController via le menu Embed In > Navigation Controller
 - NavigationBar : Élément visuel affiché en haut de l'écran, contenant le titre et des boutons.
 - NavigationController : Contrôleur logique qui gère la pile de vues et permet la navigation entre les écrans.
 - La NavigationBar est une partie visible, tandis que le NavigationController gère la logique de navigation.
+
+## 6 - Ecran 
+
+### Exercice 1
+
+Un Segue en Swift est une transition entre deux ViewControllers dans un Storyboard. Il sert à naviguer d'un écran à un autre, comme afficher un détail après avoir sélectionné un élément dans une liste. Le Segue automatise cette navigation, souvent sans nécessiter de code supplémentaire.
+
+### Exercice 2
+
+Une constraint (contrainte) en Swift est une règle qui définit la position et la taille d'un élément d'interface dans une vue. Elle sert à définir comment un élément doit se positionner par rapport aux autres éléments ou à son parent, tout en permettant de gérer différentes tailles d'écrans (réactivité).
+
+Les constraints font partie du système AutoLayout, qui permet de définir des interfaces dynamiques et adaptatives, garantissant ainsi que l'interface s'ajuste correctement sur différents appareils et orientations. Grâce aux contraintes, AutoLayout peut automatiquement redimensionner et repositionner les éléments en fonction de la taille de l'écran.
