@@ -11,7 +11,7 @@ class DocumentTableViewController: UITableViewController {
     
     struct DocumentFile {
         var title: String
-        var size: Int // La taille est exprimée en KB
+        var size: Int
         var imageName: String? = nil
         var url: URL
         var type: String
@@ -50,10 +50,25 @@ class DocumentTableViewController: UITableViewController {
         let document = DocumentTableViewController.documentsFile[indexPath.row]
         
         cell.textLabel?.text = document.title
-        cell.detailTextLabel?.text = "\(document.size)"
+        cell.detailTextLabel?.text = "Size: \(document.size.formattedSize())"
         
+        if let imageName = document.imageName, let image = UIImage(named: imageName) {
+            cell.imageView?.image = image
+        } else {
+            cell.imageView?.image = UIImage(systemName: "doc.text")
+        }
         
         return cell
     }
+}
 
+extension Int {
+    // Extension de Int pour formater la taille en Bytes, KB, MB, GB
+    func formattedSize() -> String {
+        let byteCountFormatter = ByteCountFormatter()
+        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB] // Limiter aux unités pertinentes
+        byteCountFormatter.countStyle = .file
+        
+        return byteCountFormatter.string(fromByteCount: Int64(self))
+    }
 }
