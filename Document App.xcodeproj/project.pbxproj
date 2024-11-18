@@ -16,6 +16,7 @@
 		2E9E26D32CEB46C600FEF37C /* DocumentTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E9E26D22CEB46C600FEF37C /* DocumentTableViewController.swift */; };
 		2E9E26E62CEB844700FEF37C /* Shrek1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2E9E26E42CEB844700FEF37C /* Shrek1.jpg */; };
 		2E9E26E72CEB844700FEF37C /* shresh.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2E9E26E52CEB844700FEF37C /* shresh.jpg */; };
+		2E9E26E92CEB96CB00FEF37C /* DocumentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E9E26E82CEB96CB00FEF37C /* DocumentViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		2E9E26D22CEB46C600FEF37C /* DocumentTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentTableViewController.swift; sourceTree = "<group>"; };
 		2E9E26E42CEB844700FEF37C /* Shrek1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Shrek1.jpg; sourceTree = "<group>"; };
 		2E9E26E52CEB844700FEF37C /* shresh.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = shresh.jpg; sourceTree = "<group>"; };
+		2E9E26E82CEB96CB00FEF37C /* DocumentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +64,7 @@
 		2E9E26BD2CEB291C00FEF37C /* Document App */ = {
 			isa = PBXGroup;
 			children = (
+				2E9E26E82CEB96CB00FEF37C /* DocumentViewController.swift */,
 				2E9E26D22CEB46C600FEF37C /* DocumentTableViewController.swift */,
 				2E9E26BE2CEB291C00FEF37C /* AppDelegate.swift */,
 				2E9E26C02CEB291C00FEF37C /* SceneDelegate.swift */,
@@ -149,6 +152,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2E9E26E92CEB96CB00FEF37C /* DocumentViewController.swift in Sources */,
 				2E9E26C32CEB291C00FEF37C /* ViewController.swift in Sources */,
 				2E9E26BF2CEB291C00FEF37C /* AppDelegate.swift in Sources */,
 				2E9E26D32CEB46C600FEF37C /* DocumentTableViewController.swift in Sources */,
