@@ -28,3 +28,7 @@
 ### Exercice 3 :
 
 - **Changer d'appareil** : Barre au dessus du code, "DocumentApp" > menu deroulant des appareils.
+
+## 3 - Délégation 
+
+Une propriété statique en programmation est une propriété attachée à une classe plutôt qu'à une instance de cette classe. Cela signifie qu'elle est partagée par toutes les instances de la classe et qu'elle peut être utilisée sans créer d'objet à partir de cette classe.
