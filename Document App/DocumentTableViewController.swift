@@ -3,72 +3,65 @@ import QuickLook
 
 class DocumentTableViewController: UITableViewController {
     
-    // Structure pour représenter un fichier de document
     struct DocumentFile {
-        var title: String         // Titre du fichier
-        var size: Int             // Taille en octets
-        var imageName: String?    // Nom de l'image associée (facultatif)
-        var url: URL              // URL du fichier
-        var type: String          // Type MIME du fichier
+        var title: String
+        var size: Int
+        var imageName: String?
+        var url: URL
+        var type: String
     }
     
-    // Liste des fichiers à afficher dans le TableView
     var documentsFile = [DocumentFile]()
-    var selectedFileURL: URL? // URL du fichier actuellement sélectionné
+    var selectedFileURL: URL?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Charger les fichiers du bundle et les assigner au tableau
+        // Charger les fichiers du bundle et du stockage
         documentsFile = listFileInBundle() + listFileInStorage()
         
-        // Ajouter un bouton "+" dans la barre de navigation pour importer des documents
+        // Ajouter un bouton "+" dans la barre de navigation
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addDocument))
         
-        // Recharger le TableView avec les nouvelles données
         tableView.reloadData()
     }
 
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1 // Une seule section
+        return 1
     }
-        
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return documentsFile.count // Nombre de fichiers dans la liste
+        return documentsFile.count
     }
-        
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DocumentCell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "DocumentCell")
         
-        // Récupérer le document correspondant à la ligne
         let document = documentsFile[indexPath.row]
         
-        // Configurer le texte principal et les détails de la cellule
         cell.textLabel?.text = document.title
         cell.detailTextLabel?.text = "Size: \(document.size.formattedSize())"
-        cell.accessoryType = .disclosureIndicator // Ajouter une flèche pour indiquer un détail
+        cell.accessoryType = .disclosureIndicator
 
         return cell
     }
 
-    // MARK: - Gestion de la sélection des lignes
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let selectedDocument = documentsFile[indexPath.row]
         self.instantiateQLPreviewController(withUrl: selectedDocument.url)
     }
 
-    // Fonction pour instancier et présenter un QLPreviewController
     func instantiateQLPreviewController(withUrl url: URL) {
-        selectedFileURL = url // Stocker l'URL sélectionnée
-
+        selectedFileURL = url
         let previewController = QLPreviewController()
-        previewController.dataSource = self // Définir le dataSource sur self
+        previewController.dataSource = self
         self.navigationController?.pushViewController(previewController, animated: true)
     }
 
     // MARK: - Importation de fichiers via UIDocumentPicker
+
     @objc func addDocument() {
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item])
         documentPicker.delegate = self
@@ -78,7 +71,7 @@ class DocumentTableViewController: UITableViewController {
 
     // Fonction pour lister les fichiers dans le bundle principal
     func listFileInBundle() -> [DocumentFile] {
-        let supportedExtensions = ["jpg", "jpeg", "png", "gif"] // Types d'images pris en charge
+        let supportedExtensions = ["jpg", "jpeg", "png", "gif"]
         let fm = FileManager.default
         guard let path = Bundle.main.resourcePath else { return [] }
         let items = try! fm.contentsOfDirectory(atPath: path)
@@ -103,6 +96,7 @@ class DocumentTableViewController: UITableViewController {
         return documentListBundle
     }
     
+    // Fonction pour lister les fichiers dans le répertoire Documents
     func listFileInStorage() -> [DocumentFile] {
         let fileManager = FileManager.default
         guard let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
@@ -124,6 +118,8 @@ class DocumentTableViewController: UITableViewController {
             return []
         }
     }
+
+    // MARK: - UIDocumentPickerDelegate
 
 }
 
@@ -148,13 +144,11 @@ extension DocumentTableViewController: QLPreviewControllerDataSource {
     }
 }
 
-// Extension pour le protocole UIDocumentPickerDelegate
 extension DocumentTableViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let selectedUrl = urls.first else { return }
         
         do {
-            // Copier le fichier dans le répertoire de l'application
             let fileManager = FileManager.default
             let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
             let targetUrl = appDocumentsDir.appendingPathComponent(selectedUrl.lastPathComponent)
@@ -163,12 +157,11 @@ extension DocumentTableViewController: UIDocumentPickerDelegate {
                 try fileManager.copyItem(at: selectedUrl, to: targetUrl)
             }
             
-            // Mettre à jour la liste des fichiers
             let resourcesValues = try targetUrl.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey])
             let newDocument = DocumentFile(
                 title: resourcesValues.name ?? "Unknown",
                 size: resourcesValues.fileSize ?? 0,
-                imageName: nil, // Pas d'image associée pour le moment
+                imageName: nil,
                 url: targetUrl,
                 type: resourcesValues.contentType?.description ?? "Unknown"
             )
@@ -183,3 +176,4 @@ extension DocumentTableViewController: UIDocumentPickerDelegate {
         print("L'utilisateur a annulé la sélection.")
     }
 }
+
