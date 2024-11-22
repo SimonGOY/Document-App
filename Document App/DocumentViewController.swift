@@ -8,11 +8,16 @@
 import UIKit
 
 class DocumentViewController: UIViewController {
-
+    @IBOutlet weak var imageView: UIImageView!
+    var imageName: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        if let imageName = imageName {
+            // Afficher l'image dans l'ImageView
+            imageView.image = UIImage(named: imageName)
+        }
     }
     
 

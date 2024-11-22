@@ -1,4 +1,3 @@
-//
 //  DocumentTableViewController.swift
 //  Document App
 //
@@ -30,6 +29,20 @@ class DocumentTableViewController: UITableViewController {
         // Recharger le TableView avec les nouvelles données
         tableView.reloadData()
     }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowDocumentSegue" { // Vérifiez que l'identifiant correspond à celui défini dans le storyboard
+            // Récupérer l'index de la ligne sélectionnée
+            if let indexPath = tableView.indexPathForSelectedRow {
+                let selectedDocument = documentsFile[indexPath.row] // Document sélectionné
+                
+                // Cibler le DocumentViewController
+                if let detailVC = segue.destination as? DocumentViewController {
+                    detailVC.imageName = selectedDocument.imageName // Transmettre le nom de l'image
+                }
+            }
+        }
+    }
 
     // MARK: - Table view data source
 
@@ -57,6 +70,7 @@ class DocumentTableViewController: UITableViewController {
     
     // Fonction pour lister les fichiers dans le bundle principal
     func listFileInBundle() -> [DocumentFile] {
+        let supportedExtensions = ["jpg", "jpeg", "png", "gif"] // Types d'images pris en charge
         
         let fm = FileManager.default // Gestionnaire de fichiers
         guard let path = Bundle.main.resourcePath else { return [] } // Chemin des ressources du bundle
@@ -65,8 +79,9 @@ class DocumentTableViewController: UITableViewController {
         var documentListBundle = [DocumentFile]() // Liste des fichiers validés
         
         for item in items {
-            // Filtrer les fichiers pour exclure les fichiers système et inclure uniquement les ".jpg"
-            if !item.hasSuffix("DS_Store") && item.hasSuffix(".jpg") {
+            // Vérifier si le fichier a une extension prise en charge
+            if let fileExtension = item.split(separator: ".").last,
+               supportedExtensions.contains(fileExtension.lowercased()) {
                 let currentUrl = URL(fileURLWithPath: path + "/" + item) // URL complète du fichier
                 
                 // Récupération des métadonnées (nom, type, taille)
