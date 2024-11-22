@@ -65,3 +65,13 @@ Un Segue en Swift est une transition entre deux ViewControllers dans un Storyboa
 Une constraint (contrainte) en Swift est une règle qui définit la position et la taille d'un élément d'interface dans une vue. Elle sert à définir comment un élément doit se positionner par rapport aux autres éléments ou à son parent, tout en permettant de gérer différentes tailles d'écrans (réactivité).
 
 Les constraints font partie du système AutoLayout, qui permet de définir des interfaces dynamiques et adaptatives, garantissant ainsi que l'interface s'ajuste correctement sur différents appareils et orientations. Grâce aux contraintes, AutoLayout peut automatiquement redimensionner et repositionner les éléments en fonction de la taille de l'écran.
+
+
+## QLPreview 
+
+### Code :
+Voir la branch QLPreview
+
+### Pourquoi serait-il pertinent de changer l’accessory des cellules en disclosureIndicator ?
+
+Le disclosureIndicator est pertinent car il indique clairement que sélectionner une cellule mène à une action ou une vue détaillée, comme l'ouverture d'un document. Cela rend l'application cohérente avec les standards iOS, améliore l'expérience utilisateur et facilite la navigation intuitive.
