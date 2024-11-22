@@ -1,124 +1,119 @@
 import UIKit
-import QuickLook
 
-class DocumentTableViewController: UITableViewController {
+class DocumentTableViewController: UITableViewController, UISearchBarDelegate {
 
-    // Structure pour représenter un fichier
     struct DocumentFile {
-        var title: String         // Titre du fichier
-        var size: Int             // Taille en octets
-        var imageName: String?    // Nom de l'image associée
-        var url: URL              // URL du fichier
-        var type: String          // Type MIME
+        var title: String
+        var size: Int
+        var imageName: String?
+        var url: URL
+        var type: String
     }
 
-    // Liste des fichiers par section
-    var bundleFiles = [DocumentFile]()    // Fichiers dans le bundle
-    var importedFiles = [DocumentFile]()  // Fichiers importés
-    var selectedFileURL: URL?             // URL du fichier sélectionné pour la prévisualisation
+    var bundleFiles = [DocumentFile]()
+    var importedFiles = [DocumentFile]()
+    var filteredFiles = [DocumentFile]()
+    var isSearching = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Charger les fichiers des deux sources
+        // Charger les fichiers du bundle et les assigner aux tableaux
         bundleFiles = listFileInBundle()
         importedFiles = listFileInStorage()
+        filteredFiles = bundleFiles + importedFiles // Initialisation avec tous les fichiers
 
         // Ajouter un bouton "+" dans la barre de navigation
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addDocument))
 
-        // Recharger le tableau
+        // Ajouter la Search Bar
+        let searchBar = UISearchBar()
+        searchBar.delegate = self
+        searchBar.placeholder = "Rechercher un document"
+        navigationItem.titleView = searchBar
+
+        // Recharger le TableView avec les nouvelles données
         tableView.reloadData()
     }
 
-    // MARK: - Table View Data Source
+    // MARK: - Search Bar Delegate
+
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        filterDocuments(searchText: searchText)
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        filterDocuments(searchText: "")
+    }
+
+    // Fonction de filtrage des documents
+    func filterDocuments(searchText: String) {
+        if searchText.isEmpty {
+            filteredFiles = bundleFiles + importedFiles // Afficher tous les fichiers
+        } else {
+            filteredFiles = (bundleFiles + importedFiles).filter { document in
+                // Comparaison des titres des documents avec le texte de recherche
+                return document.title.lowercased().contains(searchText.lowercased())
+            }
+        }
+        tableView.reloadData()
+    }
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "ShowDocumentSegue" {
+            if let indexPath = tableView.indexPathForSelectedRow {
+                let selectedDocument = filteredFiles[indexPath.row] // Document sélectionné
+                if let detailVC = segue.destination as? DocumentViewController {
+                    detailVC.imageName = selectedDocument.imageName
+                }
+            }
+        }
+    }
+
+    // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 2 // Une section pour les fichiers Bundle et une pour les fichiers Importés
+        return 2 // Deux sections : Bundle et Importés
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 0 {
-            return bundleFiles.count // Section Bundle
+            // Filtrer les fichiers du bundle
+            return filteredFiles.filter { document in
+                bundleFiles.contains(where: { $0.title == document.title })
+            }.count
         } else {
-            return importedFiles.count // Section Importés
-        }
-    }
-
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        if section == 0 {
-            return "Bundle" // Titre de la section Bundle
-        } else {
-            return "Importés" // Titre de la section Importés
+            // Filtrer les fichiers importés
+            return filteredFiles.filter { document in
+                importedFiles.contains(where: { $0.title == document.title })
+            }.count
         }
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DocumentCell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "DocumentCell")
-
-        // Récupérer le document correspondant à la ligne et à la section
+        
         let document: DocumentFile
         if indexPath.section == 0 {
-            document = bundleFiles[indexPath.row] // Section Bundle
+            // Fichiers du bundle
+            document = filteredFiles.filter { document in
+                bundleFiles.contains(where: { $0.title == document.title })
+            }[indexPath.row]
         } else {
-            document = importedFiles[indexPath.row] // Section Importés
+            // Fichiers importés
+            document = filteredFiles.filter { document in
+                importedFiles.contains(where: { $0.title == document.title })
+            }[indexPath.row]
         }
-
-        // Configurer la cellule
+        
         cell.textLabel?.text = document.title
         cell.detailTextLabel?.text = "Size: \(document.size.formattedSize())"
-        cell.accessoryType = .disclosureIndicator
-
         return cell
     }
 
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        var selectedDocument: DocumentFile
-
-        // Sélectionner le document en fonction de la section
-        if indexPath.section == 0 {
-            selectedDocument = bundleFiles[indexPath.row] // Section Bundle
-        } else {
-            selectedDocument = importedFiles[indexPath.row] // Section Importés
-        }
-
-        // Assigner l'URL du fichier sélectionné
-        self.selectedFileURL = selectedDocument.url
-
-        // Vérifier si l'URL du fichier est valide avant d'ouvrir le QLPreviewController
-        if let fileURL = selectedFileURL, fileURL.isFileURL {
-            self.instantiateQLPreviewController(withUrl: fileURL)
-        } else {
-            // Afficher une alerte si l'URL du fichier n'est pas valide
-            let alert = UIAlertController(title: "Erreur", message: "Le fichier sélectionné n'est pas valide.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-
-    func instantiateQLPreviewController(withUrl url: URL) {
-        // Créer un QLPreviewController
-        let previewController = QLPreviewController()
-
-        // Vérifier si l'URL est bien un fichier local avant de l'assigner au QLPreviewController
-        if url.isFileURL {
-            previewController.dataSource = self
-            self.navigationController?.pushViewController(previewController, animated: true)
-        } else {
-            // Si ce n'est pas un fichier valide, afficher un message d'erreur
-            let alert = UIAlertController(title: "Erreur", message: "Le fichier n'est pas accessible pour la prévisualisation.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            self.present(alert, animated: true, completion: nil)
-        }
-    }
-
-    // MARK: - Importation de fichiers via UIDocumentPicker
-
-    @objc func addDocument() {
-        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item])
-        documentPicker.delegate = self
-        documentPicker.allowsMultipleSelection = false
-        present(documentPicker, animated: true, completion: nil)
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return section == 0 ? "Bundle" : "Importés"
     }
 
     // Fonction pour lister les fichiers dans le bundle principal
@@ -131,8 +126,7 @@ class DocumentTableViewController: UITableViewController {
         var documentListBundle = [DocumentFile]()
 
         for item in items {
-            if let fileExtension = item.split(separator: ".").last,
-               supportedExtensions.contains(fileExtension.lowercased()) {
+            if let fileExtension = item.split(separator: ".").last, supportedExtensions.contains(fileExtension.lowercased()) {
                 let currentUrl = URL(fileURLWithPath: path + "/" + item)
                 if let resourcesValues = try? currentUrl.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey]) {
                     documentListBundle.append(DocumentFile(
@@ -148,7 +142,6 @@ class DocumentTableViewController: UITableViewController {
         return documentListBundle
     }
 
-    // Fonction pour lister les fichiers dans le répertoire Documents
     func listFileInStorage() -> [DocumentFile] {
         let fileManager = FileManager.default
         guard let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
@@ -171,21 +164,22 @@ class DocumentTableViewController: UITableViewController {
         }
     }
 
-    // MARK: - UIDocumentPickerDelegate
-
+    @objc func addDocument() {
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item])
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = false
+        present(documentPicker, animated: true, completion: nil)
+    }
 }
 
-extension DocumentTableViewController: QLPreviewControllerDataSource {
-    func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
-        return 1 // Toujours un seul fichier à prévisualiser
-    }
+// MARK: - Extensions
 
-    func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
-        // Retourner l'URL valide pour le prévisualisateur
-        guard let fileURL = selectedFileURL else {
-            fatalError("Le fichier sélectionné est invalide ou inexistant.")
-        }
-        return fileURL as QLPreviewItem
+extension Int {
+    func formattedSize() -> String {
+        let byteCountFormatter = ByteCountFormatter()
+        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
+        byteCountFormatter.countStyle = .file
+        return byteCountFormatter.string(fromByteCount: Int64(self))
     }
 }
 
@@ -210,7 +204,8 @@ extension DocumentTableViewController: UIDocumentPickerDelegate {
                 url: targetUrl,
                 type: resourcesValues.contentType?.description ?? "Unknown"
             )
-            importedFiles.append(newDocument) // Ajouter aux fichiers importés
+            importedFiles.append(newDocument)
+            filteredFiles = bundleFiles + importedFiles
             tableView.reloadData()
         } catch {
             print("Erreur lors de l'importation : \(error)")
@@ -219,15 +214,5 @@ extension DocumentTableViewController: UIDocumentPickerDelegate {
 
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         print("L'utilisateur a annulé la sélection.")
-    }
-}
-
-// Extension pour formater les tailles de fichiers
-extension Int {
-    func formattedSize() -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useMB, .useGB, .useKB]
-        formatter.countStyle = .file
-        return formatter.string(fromByteCount: Int64(self))
     }
 }
