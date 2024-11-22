@@ -75,3 +75,22 @@ Voir la branch QLPreview
 ### Pourquoi serait-il pertinent de changer l’accessory des cellules en disclosureIndicator ?
 
 Le disclosureIndicator est pertinent car il indique clairement que sélectionner une cellule mène à une action ou une vue détaillée, comme l'ouverture d'un document. Cela rend l'application cohérente avec les standards iOS, améliore l'expérience utilisateur et facilite la navigation intuitive.
+
+## Importation
+
+### Expliquez ce qu’est un #selector en Swift
+Un #selector est une référence à une méthode qui peut être appelée dynamiquement à l'exécution. Cela est nécessaire lorsque vous passez une méthode comme action pour des événements d'UI (boutons, gestes, etc.).
+### Que représente .add dans notre appel ?
+.add est une constante prédéfinie du type UIBarButtonSystemItem. Elle représente un bouton avec une icône “+” standardisée par Apple.
+### Expliquez également pourquoi XCode vous demande de mettre le mot clé @objc devant la fonction ciblée par le #selector
+Le mot-clé @objc rend la méthode compatible avec Objective-C, nécessaire pour les mécanismes dynamiques comme #selector, qui reposent sur le runtime Objective-C.
+### Peut-on ajouter plusieurs boutons dans la barre de navigation ? Si oui, comment en code ?
+Oui, on peut ajouter plusieurs boutons en utilisant la propriété navigationItem.rightBarButtonItems, qui accepte un tableau de UIBarButtonItem :
+```Swift
+navigationItem.rightBarButtonItems = [
+    UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addDocument)),
+    UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editDocuments))
+]
+```
+
+Pour voir les fichiers, utiliser la branche QLPreview, la branche main ne permet pas d'afficher autre chose que des images.
