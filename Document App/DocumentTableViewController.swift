@@ -1,10 +1,5 @@
-//  DocumentTableViewController.swift
-//  Document App
-//
-//  Created by Simon GOY on 11/18/24.
-//
-
 import UIKit
+import QuickLook // Importer QuickLook
 
 class DocumentTableViewController: UITableViewController {
     
@@ -19,6 +14,7 @@ class DocumentTableViewController: UITableViewController {
     
     // Liste des fichiers à afficher dans le TableView
     var documentsFile = [DocumentFile]()
+    var selectedFileURL: URL? // URL du fichier actuellement sélectionné
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,20 +24,6 @@ class DocumentTableViewController: UITableViewController {
         
         // Recharger le TableView avec les nouvelles données
         tableView.reloadData()
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "ShowDocumentSegue" { // Vérifiez que l'identifiant correspond à celui défini dans le storyboard
-            // Récupérer l'index de la ligne sélectionnée
-            if let indexPath = tableView.indexPathForSelectedRow {
-                let selectedDocument = documentsFile[indexPath.row] // Document sélectionné
-                
-                // Cibler le DocumentViewController
-                if let detailVC = segue.destination as? DocumentViewController {
-                    detailVC.imageName = selectedDocument.imageName // Transmettre le nom de l'image
-                }
-            }
-        }
     }
 
     // MARK: - Table view data source
@@ -55,7 +37,6 @@ class DocumentTableViewController: UITableViewController {
     }
         
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // Réutiliser ou créer une cellule
         let cell = tableView.dequeueReusableCell(withIdentifier: "DocumentCell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "DocumentCell")
         
         // Récupérer le document correspondant à la ligne
@@ -64,39 +45,62 @@ class DocumentTableViewController: UITableViewController {
         // Configurer le texte principal et les détails de la cellule
         cell.textLabel?.text = document.title
         cell.detailTextLabel?.text = "Size: \(document.size.formattedSize())"
-        
+        cell.accessoryType = .disclosureIndicator // Ajouter une flèche pour indiquer un détail
+
         return cell
     }
-    
+
+    // MARK: - Gestion de la sélection des lignes
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedDocument = documentsFile[indexPath.row]
+        self.instantiateQLPreviewController(withUrl: selectedDocument.url)
+    }
+
+    // Fonction pour instancier et présenter un QLPreviewController
+    func instantiateQLPreviewController(withUrl url: URL) {
+        selectedFileURL = url // Stocker l'URL sélectionnée
+
+        let previewController = QLPreviewController()
+        previewController.dataSource = self // Définir le dataSource sur self
+        self.navigationController?.pushViewController(previewController, animated: true)
+    }
+
     // Fonction pour lister les fichiers dans le bundle principal
     func listFileInBundle() -> [DocumentFile] {
         let supportedExtensions = ["jpg", "jpeg", "png", "gif"] // Types d'images pris en charge
+        let fm = FileManager.default
+        guard let path = Bundle.main.resourcePath else { return [] }
+        let items = try! fm.contentsOfDirectory(atPath: path)
         
-        let fm = FileManager.default // Gestionnaire de fichiers
-        guard let path = Bundle.main.resourcePath else { return [] } // Chemin des ressources du bundle
-        let items = try! fm.contentsOfDirectory(atPath: path) // Liste des fichiers dans le bundle
-        
-        var documentListBundle = [DocumentFile]() // Liste des fichiers validés
+        var documentListBundle = [DocumentFile]()
         
         for item in items {
-            // Vérifier si le fichier a une extension prise en charge
             if let fileExtension = item.split(separator: ".").last,
                supportedExtensions.contains(fileExtension.lowercased()) {
-                let currentUrl = URL(fileURLWithPath: path + "/" + item) // URL complète du fichier
-                
-                // Récupération des métadonnées (nom, type, taille)
+                let currentUrl = URL(fileURLWithPath: path + "/" + item)
                 if let resourcesValues = try? currentUrl.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey]) {
                     documentListBundle.append(DocumentFile(
-                        title: resourcesValues.name ?? "Unknown",      // Nom du fichier
-                        size: resourcesValues.fileSize ?? 0,          // Taille du fichier
-                        imageName: item,                              // Nom de l'image
-                        url: currentUrl,                              // URL complète
-                        type: resourcesValues.contentType?.description ?? "Unknown" // Type MIME
+                        title: resourcesValues.name ?? "Unknown",
+                        size: resourcesValues.fileSize ?? 0,
+                        imageName: item,
+                        url: currentUrl,
+                        type: resourcesValues.contentType?.description ?? "Unknown"
                     ))
                 }
             }
         }
-        return documentListBundle // Retourner la liste des fichiers trouvés
+        return documentListBundle
+    }
+}
+
+// Extension pour le protocole QLPreviewControllerDataSource
+extension DocumentTableViewController: QLPreviewControllerDataSource {
+    func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
+        return selectedFileURL != nil ? 1 : 0
+    }
+
+    func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
+        return selectedFileURL! as QLPreviewItem
     }
 }
 
@@ -104,9 +108,8 @@ class DocumentTableViewController: UITableViewController {
 extension Int {
     func formattedSize() -> String {
         let byteCountFormatter = ByteCountFormatter()
-        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB] // Limiter aux unités pertinentes
+        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
         byteCountFormatter.countStyle = .file
-        
         return byteCountFormatter.string(fromByteCount: Int64(self))
     }
 }
