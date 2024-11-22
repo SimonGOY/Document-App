@@ -24,7 +24,7 @@ class DocumentTableViewController: UITableViewController {
         super.viewDidLoad()
         
         // Charger les fichiers du bundle et les assigner au tableau
-        documentsFile = listFileInBundle()
+        documentsFile = listFileInBundle() + listFileInStorage()
         
         // Ajouter un bouton "+" dans la barre de navigation
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addDocument))
