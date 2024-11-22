@@ -94,3 +94,7 @@ navigationItem.rightBarButtonItems = [
 ```
 
 Pour voir les fichiers, utiliser la branche QLPreview, la branche main ne permet pas d'afficher autre chose que des images.
+
+### A quoi sert la fonction defer ?
+
+Le mot-clé defer en Swift permet d'exécuter un bloc de code juste avant la sortie de la fonction ou méthode, quel que soit le chemin de sortie (qu'il y ait un return, une erreur, etc.). Il est souvent utilisé pour garantir que des actions de nettoyage, comme fermer des fichiers ou libérer des ressources, sont toujours effectuées à la fin de la fonction. Si plusieurs blocs defer sont utilisés, ils s'exécutent dans l'ordre inverse de leur déclaration.
