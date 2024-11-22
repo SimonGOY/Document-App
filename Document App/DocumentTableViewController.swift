@@ -1,13 +1,7 @@
-//  DocumentTableViewController.swift
-//  Document App
-//
-//  Created by Simon GOY on 11/18/24.
-//
-
 import UIKit
 
 class DocumentTableViewController: UITableViewController {
-    
+
     // Structure pour représenter un fichier de document
     struct DocumentFile {
         var title: String         // Titre du fichier
@@ -22,24 +16,22 @@ class DocumentTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // Charger les fichiers du bundle et les assigner au tableau
         documentsFile = listFileInBundle() + listFileInStorage()
-        
+
         // Ajouter un bouton "+" dans la barre de navigation
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addDocument))
-        
+
         // Recharger le TableView avec les nouvelles données
         tableView.reloadData()
     }
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "ShowDocumentSegue" { // Vérifiez que l'identifiant correspond à celui défini dans le storyboard
-            // Récupérer l'index de la ligne sélectionnée
+        if segue.identifier == "ShowDocumentSegue" {
+            // Vérifiez que l'identifiant correspond à celui défini dans le storyboard
             if let indexPath = tableView.indexPathForSelectedRow {
                 let selectedDocument = documentsFile[indexPath.row] // Document sélectionné
-                
-                // Cibler le DocumentViewController
                 if let detailVC = segue.destination as? DocumentViewController {
                     detailVC.imageName = selectedDocument.imageName // Transmettre le nom de l'image
                 }
@@ -58,54 +50,48 @@ class DocumentTableViewController: UITableViewController {
     }
         
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // Réutiliser ou créer une cellule
         let cell = tableView.dequeueReusableCell(withIdentifier: "DocumentCell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "DocumentCell")
-        
+
         // Récupérer le document correspondant à la ligne
         let document = documentsFile[indexPath.row]
-        
+
         // Configurer le texte principal et les détails de la cellule
         cell.textLabel?.text = document.title
         cell.detailTextLabel?.text = "Size: \(document.size.formattedSize())"
-        
+
         return cell
     }
-    
+
     // Fonction pour lister les fichiers dans le bundle principal
     func listFileInBundle() -> [DocumentFile] {
         let supportedExtensions = ["jpg", "jpeg", "png", "gif"] // Types d'images pris en charge
-        
-        let fm = FileManager.default // Gestionnaire de fichiers
-        guard let path = Bundle.main.resourcePath else { return [] } // Chemin des ressources du bundle
-        let items = try! fm.contentsOfDirectory(atPath: path) // Liste des fichiers dans le bundle
-        
-        var documentListBundle = [DocumentFile]() // Liste des fichiers validés
-        
+        let fm = FileManager.default
+        guard let path = Bundle.main.resourcePath else { return [] }
+        let items = try! fm.contentsOfDirectory(atPath: path)
+
+        var documentListBundle = [DocumentFile]()
+
         for item in items {
-            // Vérifier si le fichier a une extension prise en charge
-            if let fileExtension = item.split(separator: ".").last,
-               supportedExtensions.contains(fileExtension.lowercased()) {
-                let currentUrl = URL(fileURLWithPath: path + "/" + item) // URL complète du fichier
-                
-                // Récupération des métadonnées (nom, type, taille)
+            if let fileExtension = item.split(separator: ".").last, supportedExtensions.contains(fileExtension.lowercased()) {
+                let currentUrl = URL(fileURLWithPath: path + "/" + item)
                 if let resourcesValues = try? currentUrl.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey]) {
                     documentListBundle.append(DocumentFile(
-                        title: resourcesValues.name ?? "Unknown",      // Nom du fichier
-                        size: resourcesValues.fileSize ?? 0,          // Taille du fichier
-                        imageName: item,                              // Nom de l'image
-                        url: currentUrl,                              // URL complète
-                        type: resourcesValues.contentType?.description ?? "Unknown" // Type MIME
+                        title: resourcesValues.name ?? "Unknown",
+                        size: resourcesValues.fileSize ?? 0,
+                        imageName: item,
+                        url: currentUrl,
+                        type: resourcesValues.contentType?.description ?? "Unknown"
                     ))
                 }
             }
         }
-        return documentListBundle // Retourner la liste des fichiers trouvés
+        return documentListBundle
     }
-    
+
     func listFileInStorage() -> [DocumentFile] {
         let fileManager = FileManager.default
         guard let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
-        
+
         do {
             let items = try fileManager.contentsOfDirectory(at: appDocumentsDir, includingPropertiesForKeys: [.contentTypeKey, .nameKey, .fileSizeKey], options: .skipsHiddenFiles)
             return items.map { url in
@@ -124,7 +110,6 @@ class DocumentTableViewController: UITableViewController {
         }
     }
 
-    
     @objc func addDocument() {
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item])
         documentPicker.delegate = self
@@ -133,17 +118,19 @@ class DocumentTableViewController: UITableViewController {
     }
 }
 
+// MARK: - Extensions
+
 // Extension pour formater les tailles de fichiers
 extension Int {
     func formattedSize() -> String {
         let byteCountFormatter = ByteCountFormatter()
-        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB] // Limiter aux unités pertinentes
+        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
         byteCountFormatter.countStyle = .file
-        
         return byteCountFormatter.string(fromByteCount: Int64(self))
     }
 }
 
+// Extension pour le protocole UIDocumentPickerDelegate
 extension DocumentTableViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let selectedUrl = urls.first else { return }
@@ -173,7 +160,7 @@ extension DocumentTableViewController: UIDocumentPickerDelegate {
             print("Erreur lors de l'importation : \(error)")
         }
     }
-    
+
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         print("L'utilisateur a annulé la sélection.")
     }
