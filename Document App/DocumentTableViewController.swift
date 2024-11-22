@@ -2,7 +2,7 @@ import UIKit
 import QuickLook
 
 class DocumentTableViewController: UITableViewController {
-    
+
     // Structure pour représenter un fichier
     struct DocumentFile {
         var title: String         // Titre du fichier
@@ -11,7 +11,7 @@ class DocumentTableViewController: UITableViewController {
         var url: URL              // URL du fichier
         var type: String          // Type MIME
     }
-    
+
     // Liste des fichiers par section
     var bundleFiles = [DocumentFile]()    // Fichiers dans le bundle
     var importedFiles = [DocumentFile]()  // Fichiers importés
@@ -19,14 +19,14 @@ class DocumentTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // Charger les fichiers des deux sources
         bundleFiles = listFileInBundle()
         importedFiles = listFileInStorage()
-        
+
         // Ajouter un bouton "+" dans la barre de navigation
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addDocument))
-        
+
         // Recharger le tableau
         tableView.reloadData()
     }
@@ -36,7 +36,7 @@ class DocumentTableViewController: UITableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 2 // Une section pour les fichiers Bundle et une pour les fichiers Importés
     }
-    
+
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 0 {
             return bundleFiles.count // Section Bundle
@@ -44,7 +44,7 @@ class DocumentTableViewController: UITableViewController {
             return importedFiles.count // Section Importés
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if section == 0 {
             return "Bundle" // Titre de la section Bundle
@@ -52,10 +52,10 @@ class DocumentTableViewController: UITableViewController {
             return "Importés" // Titre de la section Importés
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "DocumentCell") ?? UITableViewCell(style: .subtitle, reuseIdentifier: "DocumentCell")
-        
+
         // Récupérer le document correspondant à la ligne et à la section
         let document: DocumentFile
         if indexPath.section == 0 {
@@ -63,28 +63,28 @@ class DocumentTableViewController: UITableViewController {
         } else {
             document = importedFiles[indexPath.row] // Section Importés
         }
-        
+
         // Configurer la cellule
         cell.textLabel?.text = document.title
         cell.detailTextLabel?.text = "Size: \(document.size.formattedSize())"
         cell.accessoryType = .disclosureIndicator
-        
+
         return cell
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         var selectedDocument: DocumentFile
-        
+
         // Sélectionner le document en fonction de la section
         if indexPath.section == 0 {
             selectedDocument = bundleFiles[indexPath.row] // Section Bundle
         } else {
             selectedDocument = importedFiles[indexPath.row] // Section Importés
         }
-        
+
         // Assigner l'URL du fichier sélectionné
         self.selectedFileURL = selectedDocument.url
-        
+
         // Vérifier si l'URL du fichier est valide avant d'ouvrir le QLPreviewController
         if let fileURL = selectedFileURL, fileURL.isFileURL {
             self.instantiateQLPreviewController(withUrl: fileURL)
@@ -99,7 +99,7 @@ class DocumentTableViewController: UITableViewController {
     func instantiateQLPreviewController(withUrl url: URL) {
         // Créer un QLPreviewController
         let previewController = QLPreviewController()
-        
+
         // Vérifier si l'URL est bien un fichier local avant de l'assigner au QLPreviewController
         if url.isFileURL {
             previewController.dataSource = self
@@ -127,9 +127,9 @@ class DocumentTableViewController: UITableViewController {
         let fm = FileManager.default
         guard let path = Bundle.main.resourcePath else { return [] }
         let items = try! fm.contentsOfDirectory(atPath: path)
-        
+
         var documentListBundle = [DocumentFile]()
-        
+
         for item in items {
             if let fileExtension = item.split(separator: ".").last,
                supportedExtensions.contains(fileExtension.lowercased()) {
@@ -147,12 +147,12 @@ class DocumentTableViewController: UITableViewController {
         }
         return documentListBundle
     }
-    
+
     // Fonction pour lister les fichiers dans le répertoire Documents
     func listFileInStorage() -> [DocumentFile] {
         let fileManager = FileManager.default
         guard let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
-        
+
         do {
             let items = try fileManager.contentsOfDirectory(at: appDocumentsDir, includingPropertiesForKeys: [.contentTypeKey, .nameKey, .fileSizeKey], options: .skipsHiddenFiles)
             return items.map { url in
@@ -192,16 +192,16 @@ extension DocumentTableViewController: QLPreviewControllerDataSource {
 extension DocumentTableViewController: UIDocumentPickerDelegate {
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
         guard let selectedUrl = urls.first else { return }
-        
+
         do {
             let fileManager = FileManager.default
             let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
             let targetUrl = appDocumentsDir.appendingPathComponent(selectedUrl.lastPathComponent)
-            
+
             if !fileManager.fileExists(atPath: targetUrl.path) {
                 try fileManager.copyItem(at: selectedUrl, to: targetUrl)
             }
-            
+
             let resourcesValues = try targetUrl.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey])
             let newDocument = DocumentFile(
                 title: resourcesValues.name ?? "Unknown",
@@ -216,7 +216,7 @@ extension DocumentTableViewController: UIDocumentPickerDelegate {
             print("Erreur lors de l'importation : \(error)")
         }
     }
-    
+
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         print("L'utilisateur a annulé la sélection.")
     }
