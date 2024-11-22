@@ -1,5 +1,5 @@
 import UIKit
-import QuickLook // Importer QuickLook
+import QuickLook
 
 class DocumentTableViewController: UITableViewController {
     
@@ -21,6 +21,9 @@ class DocumentTableViewController: UITableViewController {
         
         // Charger les fichiers du bundle et les assigner au tableau
         documentsFile = listFileInBundle()
+        
+        // Ajouter un bouton "+" dans la barre de navigation pour importer des documents
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addDocument))
         
         // Recharger le TableView avec les nouvelles données
         tableView.reloadData()
@@ -65,6 +68,14 @@ class DocumentTableViewController: UITableViewController {
         self.navigationController?.pushViewController(previewController, animated: true)
     }
 
+    // MARK: - Importation de fichiers via UIDocumentPicker
+    @objc func addDocument() {
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.item])
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = false
+        present(documentPicker, animated: true, completion: nil)
+    }
+
     // Fonction pour lister les fichiers dans le bundle principal
     func listFileInBundle() -> [DocumentFile] {
         let supportedExtensions = ["jpg", "jpeg", "png", "gif"] // Types d'images pris en charge
@@ -91,6 +102,39 @@ class DocumentTableViewController: UITableViewController {
         }
         return documentListBundle
     }
+    
+    func listFileInStorage() -> [DocumentFile] {
+        let fileManager = FileManager.default
+        guard let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else { return [] }
+        
+        do {
+            let items = try fileManager.contentsOfDirectory(at: appDocumentsDir, includingPropertiesForKeys: [.contentTypeKey, .nameKey, .fileSizeKey], options: .skipsHiddenFiles)
+            return items.map { url in
+                let resourcesValues = try? url.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey])
+                return DocumentFile(
+                    title: resourcesValues?.name ?? "Unknown",
+                    size: resourcesValues?.fileSize ?? 0,
+                    imageName: nil,
+                    url: url,
+                    type: resourcesValues?.contentType?.description ?? "Unknown"
+                )
+            }
+        } catch {
+            print("Erreur lors de la lecture des fichiers : \(error)")
+            return []
+        }
+    }
+
+}
+
+// Extension pour formater les tailles de fichiers
+extension Int {
+    func formattedSize() -> String {
+        let byteCountFormatter = ByteCountFormatter()
+        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
+        byteCountFormatter.countStyle = .file
+        return byteCountFormatter.string(fromByteCount: Int64(self))
+    }
 }
 
 // Extension pour le protocole QLPreviewControllerDataSource
@@ -104,12 +148,38 @@ extension DocumentTableViewController: QLPreviewControllerDataSource {
     }
 }
 
-// Extension pour formater les tailles de fichiers
-extension Int {
-    func formattedSize() -> String {
-        let byteCountFormatter = ByteCountFormatter()
-        byteCountFormatter.allowedUnits = [.useBytes, .useKB, .useMB, .useGB]
-        byteCountFormatter.countStyle = .file
-        return byteCountFormatter.string(fromByteCount: Int64(self))
+// Extension pour le protocole UIDocumentPickerDelegate
+extension DocumentTableViewController: UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let selectedUrl = urls.first else { return }
+        
+        do {
+            // Copier le fichier dans le répertoire de l'application
+            let fileManager = FileManager.default
+            let appDocumentsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let targetUrl = appDocumentsDir.appendingPathComponent(selectedUrl.lastPathComponent)
+            
+            if !fileManager.fileExists(atPath: targetUrl.path) {
+                try fileManager.copyItem(at: selectedUrl, to: targetUrl)
+            }
+            
+            // Mettre à jour la liste des fichiers
+            let resourcesValues = try targetUrl.resourceValues(forKeys: [.contentTypeKey, .nameKey, .fileSizeKey])
+            let newDocument = DocumentFile(
+                title: resourcesValues.name ?? "Unknown",
+                size: resourcesValues.fileSize ?? 0,
+                imageName: nil, // Pas d'image associée pour le moment
+                url: targetUrl,
+                type: resourcesValues.contentType?.description ?? "Unknown"
+            )
+            documentsFile.append(newDocument)
+            tableView.reloadData()
+        } catch {
+            print("Erreur lors de l'importation : \(error)")
+        }
+    }
+    
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        print("L'utilisateur a annulé la sélection.")
     }
 }
